@@ -3,7 +3,8 @@ import ImageGalleryItem from './modules/ImageGalleryItem';
 import ImageGallery from './modules/ImageGallery';
 import Loader from './modules/Loader';
 import Searchbar from './modules/Searchbar';
-import axios from 'axios';
+import { getImages } from './shared/api';
+
 // import Button from './modules/Button';
 // import Modal from './modules/Modal';
 
@@ -13,6 +14,7 @@ export class App extends Component {
     search: '',
     loading: false,
     error: null,
+    page: 1,
   };
 
   searchImages = ({ search }) => {
@@ -20,22 +22,29 @@ export class App extends Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    const { search } = this.state;
-    if (prevState.search !== search) {
+    const { search, page } = this.state;
+    if (prevState.search !== search || prevState.page !== page) {
       this.setState({ loading: true });
-      axios
-        .get(
-          `https://pixabay.com/api/?q= ${search} &page=1&key=32162387-0406b1794dd4cc3a4c661920a&image_type=photo&orientation=horizontal&per_page=12`
+      getImages(search, page)
+        .then(data =>
+          this.setState(prevState => ({
+            images: [...data.hits, ...prevState.images],
+          }))
         )
-        .then(response => this.setState({ images: response.data.hits }))
         .catch(error => this.setState({ error: error.message }))
         .finally(() => this.setState({ loading: false }));
     }
   }
 
+  loadMore = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
+  };
+
   render() {
     const { images, loading, error } = this.state;
-    const { searchImages } = this;
+    const { searchImages, loadMore } = this;
     return (
       <div>
         <Searchbar onSubmit={searchImages} />
@@ -44,6 +53,7 @@ export class App extends Component {
         <ImageGallery>
           <ImageGalleryItem images={images} />
         </ImageGallery>
+        {images.length > 0 && <button onClick={loadMore}>Load more</button>}
       </div>
     );
   }
