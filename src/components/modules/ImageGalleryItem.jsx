@@ -1,12 +1,15 @@
 import PropTypes from 'prop-types';
 import styles from '../styles.module.css';
-import axios from 'axios';
 
-const ImageGalleryItem = ({ images }) => {
-  const elements = images.map(({ id, webformatURL, tags }) => (
-    <li className={styles.ImageGalleryItem} key={id}>
+const ImageGalleryItem = ({ images, showImage }) => {
+  const elements = images.map(({ id, webformatURL, tags, largeImageURL }) => (
+    <li
+      className={styles.ImageGalleryItem}
+      onClick={() => showImage({ largeImageURL, tags })}
+      key={id}
+    >
       <img
-        className={styles.ImageGAlleryItemImage}
+        className={styles.ImageGalleryItemImage}
         src={webformatURL}
         alt={tags}
       />
@@ -21,12 +24,14 @@ ImageGalleryItem.defaultProps = {
   images: [],
 };
 
-// Contacts.propTypes = {
-//   onDelete: PropTypes.func.isRequired,
-//   onFilter: PropTypes.func.isRequired,
-//   contacts: PropTypes.arrayOf({
-//     id: PropTypes.string.isRequired,
-//     number: PropTypes.string.isRequired,
-//     name: PropTypes.string.isRequired,
-//   }),
-// };
+ImageGalleryItem.propTypes = {
+  showImage: PropTypes.func.isRequired,
+  images: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      webformatURL: PropTypes.string.isRequired,
+      largeImageURL: PropTypes.string.isRequired,
+      tags: PropTypes.string.isRequired,
+    })
+  ),
+};

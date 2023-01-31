@@ -1,12 +1,12 @@
 import { Component } from 'react';
+import { getImages } from './shared/api';
+import { ColorRing } from 'react-loader-spinner';
 import ImageGalleryItem from './modules/ImageGalleryItem';
 import ImageGallery from './modules/ImageGallery';
-import Loader from './modules/Loader';
 import Searchbar from './modules/Searchbar';
-import { getImages } from './shared/api';
-
-// import Button from './modules/Button';
-// import Modal from './modules/Modal';
+import Modal from './shared/Modal';
+import PostDetails from './modules/PostDetails';
+import Button from './shared/Button';
 
 export class App extends Component {
   state = {
@@ -15,24 +15,36 @@ export class App extends Component {
     loading: false,
     error: null,
     page: 1,
+    showModal: false,
+    postDetails: null,
   };
 
   searchImages = ({ search }) => {
-    this.setState({ search: search });
+    this.setState({
+      search: search,
+      images: [],
+    });
   };
 
   componentDidUpdate(prevProps, prevState) {
     const { search, page } = this.state;
     if (prevState.search !== search || prevState.page !== page) {
+      this.fetchImages();
+    }
+  }
+
+  async fetchImages() {
+    try {
+      const { search, page } = this.state;
       this.setState({ loading: true });
-      getImages(search, page)
-        .then(data =>
-          this.setState(prevState => ({
-            images: [...data.hits, ...prevState.images],
-          }))
-        )
-        .catch(error => this.setState({ error: error.message }))
-        .finally(() => this.setState({ loading: false }));
+      const data = await getImages(search, page);
+      this.setState(prevState => ({
+        images: [...prevState.images, ...data.hits],
+      }));
+    } catch (error) {
+      this.setState({ error: error.message });
+    } finally {
+      this.setState({ loading: false });
     }
   }
 
@@ -42,19 +54,50 @@ export class App extends Component {
     }));
   };
 
+  showImage = ({ largeImageURL, tags }) => {
+    this.setState({
+      showModal: true,
+      postDetails: { largeImageURL, tags },
+    });
+  };
+
+  closeModal = () => {
+    this.setState({
+      showModal: false,
+      postDetails: null,
+    });
+  };
+
   render() {
-    const { images, loading, error } = this.state;
-    const { searchImages, loadMore } = this;
+    const { images, loading, error, showModal, postDetails } = this.state;
+    const { searchImages, loadMore, showImage, closeModal } = this;
     return (
-      <div>
+      <>
         <Searchbar onSubmit={searchImages} />
         {error && <p>Error:{error}</p>}
-        {loading && <p>Loading...</p>}
+        {loading && (
+          <>
+            <ColorRing
+              visible={true}
+              height="80"
+              width="80"
+              ariaLabel="blocks-loading"
+              wrapperStyle={{}}
+              wrapperClass="blocks-wrapper"
+              colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
+            />
+          </>
+        )}
         <ImageGallery>
-          <ImageGalleryItem images={images} />
+          <ImageGalleryItem images={images} showImage={showImage} />
         </ImageGallery>
-        {images.length > 0 && <button onClick={loadMore}>Load more</button>}
-      </div>
+        {images.length > 0 && <Button loadMore={loadMore} />}
+        {showModal && (
+          <Modal close={closeModal}>
+            <PostDetails {...postDetails} />
+          </Modal>
+        )}
+      </>
     );
   }
 }

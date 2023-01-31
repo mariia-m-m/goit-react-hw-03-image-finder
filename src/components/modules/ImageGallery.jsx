@@ -14,12 +14,6 @@ const ImageGallery = ({ children }) => {
 
 export default ImageGallery;
 
-// Contacts.propTypes = {
-//   onDelete: PropTypes.func.isRequired,
-//   onFilter: PropTypes.func.isRequired,
-//   contacts: PropTypes.arrayOf({
-//     id: PropTypes.string.isRequired,
-//     number: PropTypes.string.isRequired,
-//     name: PropTypes.string.isRequired,
-//   }),
-// };
+ImageGallery.propTypes = {
+  children: PropTypes.element.isRequired,
+};
