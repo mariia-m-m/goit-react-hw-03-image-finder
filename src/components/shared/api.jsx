@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-const instance = axios.create({
-  baseURL: 'https:pixabay.com/api',
-});
-
 export const getImages = async (search, page) => {
-  const { data } = await instance.get('/', {
+  const { data } = await axios.get('https:pixabay.com/api/', {
     params: {
       q: search,
       page: page,
