@@ -1,4 +1,3 @@
-import styles from '../styles.module.css';
 import PropTypes from 'prop-types';
 
 const PostDetails = ({ largeImageURL, tags }) => {
